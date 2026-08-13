@@ -140,36 +140,38 @@ def _measure_corner(trace, corner, margin):
     if not window:
         return None
 
+    # Brake/throttle points are split on the *reference* corner's apex
+    # position - fixed for both laps being compared - rather than each
+    # lap's own re-detected minimum-speed point. On ovals, drivers often
+    # carry partial throttle through a long sweeper instead of fully
+    # lifting, so a per-lap apex can land too early and starve the
+    # "before apex" half of any samples, making brake always look
+    # missing and throttle always look artificially early.
+    split_pct = corner["apex_pct"]
+
     turn_in = next((s for s in window if abs(s["steering"] or 0.0) > STEER_ENTER), window[0])
-    apex = min(window, key=lambda s: s["speed"] if s["speed"] is not None else float("inf"))
+    speeds = [s["speed"] for s in window if s["speed"] is not None]
+    min_speed = min(speeds) if speeds else None
 
     brake_point = next(
-        (s for s in window if s["lap_dist_pct"] <= apex["lap_dist_pct"] and (s["brake"] or 0) > BRAKE_THRESHOLD),
+        (s for s in window if s["lap_dist_pct"] <= split_pct and (s["brake"] or 0) > BRAKE_THRESHOLD),
         None,
     )
     if brake_point is None:
         brake_point = next(
-            (
-                s
-                for s in window
-                if s["lap_dist_pct"] <= apex["lap_dist_pct"] and (s["throttle"] or 0) < LIFT_THRESHOLD
-            ),
+            (s for s in window if s["lap_dist_pct"] <= split_pct and (s["throttle"] or 0) < LIFT_THRESHOLD),
             None,
         )
 
     throttle_point = next(
-        (
-            s
-            for s in window
-            if s["lap_dist_pct"] >= apex["lap_dist_pct"] and (s["throttle"] or 0) > THROTTLE_THRESHOLD
-        ),
+        (s for s in window if s["lap_dist_pct"] >= split_pct and (s["throttle"] or 0) > THROTTLE_THRESHOLD),
         None,
     )
 
     return {
         "turn_in_pct": turn_in["lap_dist_pct"],
         "brake_pct": brake_point["lap_dist_pct"] if brake_point else None,
-        "min_speed": apex["speed"],
+        "min_speed": min_speed,
         "throttle_pct": throttle_point["lap_dist_pct"] if throttle_point else None,
     }
 
