@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>iRacing AI Spotter Overlay</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Root overlay. Body background is transparent (see style.css) so this
+       can be dropped straight into an OBS Browser Source. -->
+  <div id="overlay" class="disconnected">
+
+    <div id="flag-banner" class="flag-banner hidden"></div>
+
+    <div class="panel laps">
+      <div class="stat">
+        <span class="label">LAP</span>
+        <span id="lap-number" class="value">-</span>
+      </div>
+      <div class="stat">
+        <span class="label">LAST</span>
+        <span id="last-lap" class="value">--:--.---</span>
+      </div>
+      <div class="stat best">
+        <span class="label">BEST</span>
+        <span id="best-lap" class="value">--:--.---</span>
+      </div>
+    </div>
+
+    <div class="panel fuel">
+      <span class="label">FUEL</span>
+      <div class="fuel-bar">
+        <div id="fuel-fill" class="fuel-fill"></div>
+      </div>
+      <span id="fuel-pct" class="value">--%</span>
+    </div>
+
+    <div class="panel tires">
+      <span class="label">TIRES &deg;F</span>
+      <div class="tire-grid">
+        <div class="tire" data-corner="lf">
+          <span class="tire-label">LF</span>
+          <span id="tire-lf" class="tire-temp">--</span>
+        </div>
+        <div class="tire" data-corner="rf">
+          <span class="tire-label">RF</span>
+          <span id="tire-rf" class="tire-temp">--</span>
+        </div>
+        <div class="tire" data-corner="lr">
+          <span class="tire-label">LR</span>
+          <span id="tire-lr" class="tire-temp">--</span>
+        </div>
+        <div class="tire" data-corner="rr">
+          <span class="tire-label">RR</span>
+          <span id="tire-rr" class="tire-temp">--</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel strategy">
+      <span class="label">FUEL STRATEGY</span>
+      <div class="strategy-row">
+        <div class="stat">
+          <span class="label">LAPS OF FUEL</span>
+          <span id="laps-of-fuel" class="value">--</span>
+        </div>
+        <div class="stat">
+          <span class="label">LAPS LEFT</span>
+          <span id="laps-remaining" class="value">--</span>
+        </div>
+      </div>
+      <div id="fuel-status" class="fuel-status fuel-unknown">Collecting data...</div>
+    </div>
+
+    <div id="status" class="status-msg">Waiting for telemetry...</div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

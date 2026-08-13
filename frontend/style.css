@@ -1,0 +1,250 @@
+/*
+  style.css - iRacing AI Spotter overlay
+
+  Built as a permanent dark, semi-transparent surface (not a light/dark
+  toggle) since this is meant to sit on top of race video in OBS, not
+  be read as a themed web page. html/body stay fully transparent so
+  only the panels themselves are visible over the stream.
+*/
+
+:root {
+  /* Ink, on the dark surface this overlay always renders on */
+  --text-primary: #ffffff;
+  --text-secondary: #c3c2b7;
+  --text-muted: #898781;
+
+  /* Panel surface: translucent near-black so video shows through */
+  --panel-bg: rgba(13, 13, 13, 0.62);
+  --panel-border: rgba(255, 255, 255, 0.10);
+
+  /* Status palette (fixed - never restyled per-theme) */
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #d03b3b;
+
+  /* Sequential blue, used as the "cold tire" end of the temp gradient */
+  --seq-blue: #3987e5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--text-primary);
+}
+
+#overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: max-content;
+  padding: 12px;
+  transition: opacity 0.2s ease;
+}
+
+/* Dim (but don't hide) the whole overlay while we're not receiving data,
+   so it's obvious on stream that the feed dropped rather than looking frozen. */
+#overlay.disconnected .panel {
+  opacity: 0.35;
+}
+
+.status-msg {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
+#overlay.connected .status-msg {
+  display: none;
+}
+
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  padding: 8px 14px;
+  backdrop-filter: blur(4px);
+}
+
+.label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.value {
+  font-variant-numeric: tabular-nums;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* --- Lap panel --- */
+
+.laps {
+  display: flex;
+  gap: 20px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  min-width: 76px;
+}
+
+.stat.best .value {
+  color: var(--status-good);
+}
+
+/* --- Fuel panel --- */
+
+.fuel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 220px;
+}
+
+.fuel-bar {
+  flex: 1;
+  height: 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.fuel-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--status-good);
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+/* --- Tire panel --- */
+
+.tire-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px 18px;
+}
+
+.tire {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.tire-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  width: 20px;
+}
+
+.tire-temp {
+  font-variant-numeric: tabular-nums;
+  font-size: 16px;
+  font-weight: 600;
+  /* color is set per-corner in JS based on temperature */
+}
+
+/* --- Fuel strategy panel --- */
+
+.strategy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 220px;
+}
+
+.strategy-row {
+  display: flex;
+  gap: 20px;
+}
+
+/* Status color + text label together (never color alone), same rule as
+   the flag banner - tells the driver whether to start saving fuel now. */
+
+.fuel-status {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.fuel-status.fuel-ok {
+  background: var(--status-good);
+  color: #ffffff;
+}
+
+.fuel-status.fuel-save {
+  background: var(--status-warning);
+  color: #0b0b0b;
+}
+
+.fuel-status.fuel-critical {
+  background: var(--status-critical);
+  color: #ffffff;
+}
+
+.fuel-status.fuel-unknown {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-muted);
+}
+
+/* --- Flag banner ---
+   Status color + text label together (never color alone), per the flag
+   currently in effect. Hidden entirely when no flag is active. */
+
+.flag-banner {
+  align-self: center;
+  padding: 6px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #0b0b0b;
+}
+
+.flag-banner.hidden {
+  display: none;
+}
+
+.flag-banner.flag-green {
+  background: var(--status-good);
+  color: #ffffff;
+}
+
+.flag-banner.flag-yellow,
+.flag-banner.flag-caution {
+  background: var(--status-warning);
+}
+
+.flag-banner.flag-red {
+  background: var(--status-critical);
+  color: #ffffff;
+}
+
+.flag-banner.flag-white {
+  background: #f0efec;
+}
+
+.flag-banner.flag-checkered {
+  background: repeating-conic-gradient(#0b0b0b 0% 25%, #f0efec 0% 50%) 0 0 / 16px 16px;
+  color: #ffffff;
+  text-shadow: 0 0 3px #000, 0 0 3px #000;
+}
